@@ -16,11 +16,9 @@ unicode = [255, 254, 16, 4, 17, 4, 18, 4, 19, 4, 20, 4, 21, 4, 22, 4, 23, 4, 24,
            4, 30, 4, 31, 4, 32, 4, 33, 4, 34, 4, 35, 4, 36, 4, 37, 4, 38, 4, 39, 4, 40, 4, 41, 4, 44, 4, 43, 4, 42,
            4, 45, 4, 46, 4, 47, 4]
 
-myEncoding2 = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103,
-               107, 109, 113, 127, 131, 137]
-
-myEncoding = {"А": 2, "Б": 3, "В": 5, "Г": 7, "Д": 11, "Е": 13, "Ё": 17, "Ж": 19, "З": 23, "И": 29, "Й": 31, "К": 37,
-              "Л": 41, "М": 43, "Н": 47, "О": 53, "П": 59, "Р": 61, "С": 67, "Т": 71, "У": 73, "Ф": 79}
+myEncoding = {" ": 0, "А": 2, "Б": 3, "В": 5, "Г": 7, "Д": 11, "Е": 13, "Ё": 17, "Ж": 19, "З": 23, "И": 29, "Й": 31,
+              "К": 37, "Л": 41, "М": 43, "Н": 47, "О": 53, "П": 59, "Р": 61, "С": 67, "Т": 71, "У": 73, "Ф": 79,
+              "Х": 83, "Ц": 89, "Ч": 97, "Ш": 101, "Щ": 103, "Ъ": 107, "Ы": 109, "Ь": 113, "Э": 127, "Ю": 131, "Я": 137}
 
 
 class Person(BaseModel):
@@ -44,8 +42,9 @@ async def upload_file(file: UploadFile):
 
     text = file.file.read().decode(encoding)
     chars = getCharsWithCodes(text, encoding)
-
     formText = getFormatText(text)
+
+    customEncoding(formText)
 
     return {"encodingType": encoding, "chars": chars, "rawText": text, "formatText": formText}
 
@@ -106,4 +105,17 @@ def getCharsWithCodes(text: str, encoding: str) -> list:
 def getFormatText(text: str) -> str:
     res = re.sub(r'[^\w\s]', '', text)
 
-    return res
+    return " ".join(res.split())
+
+
+def customEncoding(text: str):
+    encodedChars = list()
+
+    for c in text:
+        encodedChars.append(str(myEncoding[c]))
+
+    encodedStr = str.join(" ", encodedChars)
+
+    lab1_file = open(file="files/lab1.txt", mode="w")
+    lab1_file.write(encodedStr)
+    lab1_file.close()
