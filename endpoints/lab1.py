@@ -4,7 +4,7 @@ from fastapi import APIRouter, UploadFile, status
 from pydantic import BaseModel
 from fastapi.encoders import jsonable_encoder
 
-testRouter: APIRouter = APIRouter()
+lab1Router: APIRouter = APIRouter()
 
 win1251 = [192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212,
            213, 214, 215, 216, 217, 220, 219, 218, 221, 222, 223]
@@ -27,7 +27,7 @@ class Person(BaseModel):
     weight: float
 
 
-@testRouter.get("/test-route", response_model=Person)
+@lab1Router.get("/test-route", response_model=Person)
 async def test_func():
     newPerson = Person(name="IVAN", age=20, weight=72.5)
 
@@ -36,7 +36,7 @@ async def test_func():
     return jsonObject
 
 
-@testRouter.post("/upload-file")
+@lab1Router.post("/upload-file")
 async def upload_file(file: UploadFile):
     encoding: str = getEncoding(file)
 
@@ -77,7 +77,7 @@ class Char:
         return self.symbol == other.symbol
 
 
-def sort_by_symbol(char: Char):
+def sortBySymbol(char: Char):
     return char.symbol
 
 
@@ -97,7 +97,7 @@ def getCharsWithCodes(text: str, encoding: str) -> list:
         if char not in chars:
             chars.append(char)
 
-    chars.sort(key=sort_by_symbol)
+    chars.sort(key=sortBySymbol)
 
     return chars
 
