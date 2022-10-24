@@ -116,6 +116,6 @@ def customEncoding(text: str):
 
     encodedStr = str.join(" ", encodedChars)
 
-    lab1_file = open(file="files/lab1.txt", mode="w")
+    lab1_file = open(file="files/results/lab1.txt", mode="w")
     lab1_file.write(encodedStr)
     lab1_file.close()

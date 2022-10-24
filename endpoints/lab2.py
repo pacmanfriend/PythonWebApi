@@ -30,7 +30,7 @@ async def upload_file(file: UploadFile):
 
     encodedText = res[1]
 
-    lab2_file = open("files/lab2.txt", "w")
+    lab2_file = open("files/results/lab2.txt", "w")
 
     lab2_file.write(encodedText)
 
