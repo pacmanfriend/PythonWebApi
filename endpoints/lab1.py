@@ -1,8 +1,7 @@
 import re
+from typing import BinaryIO
 
-from fastapi import APIRouter, UploadFile, status
-from pydantic import BaseModel
-from fastapi.encoders import jsonable_encoder
+from fastapi import APIRouter
 
 lab1Router: APIRouter = APIRouter()
 
@@ -21,38 +20,25 @@ myEncoding = {" ": 0, "А": 2, "Б": 3, "В": 5, "Г": 7, "Д": 11, "Е": 13, "�
               "Х": 83, "Ц": 89, "Ч": 97, "Ш": 101, "Щ": 103, "Ъ": 107, "Ы": 109, "Ь": 113, "Э": 127, "Ю": 131, "Я": 137}
 
 
-class Person(BaseModel):
-    name: str
-    age: int
-    weight: float
+@lab1Router.get("/get-file-encoding")
+async def get_file_encoding(file_name: str):
+    file = open(f"files/labs/{file_name}", mode="br")
 
+    encoding: str = get_encoding(file)
+    text = file.read().decode(encoding)
 
-@lab1Router.get("/test-route", response_model=Person)
-async def test_func():
-    newPerson = Person(name="IVAN", age=20, weight=72.5)
+    chars = get_chars_with_codes(text, encoding)
+    formText = get_format_text(text)
 
-    jsonObject = jsonable_encoder(newPerson)
-
-    return jsonObject
-
-
-@lab1Router.post("/upload-file")
-async def upload_file(file: UploadFile):
-    encoding: str = getEncoding(file)
-
-    text = file.file.read().decode(encoding)
-    chars = getCharsWithCodes(text, encoding)
-    formText = getFormatText(text)
-
-    customEncoding(formText)
+    custom_encoding(formText)
 
     return {"encodingType": encoding, "chars": chars, "rawText": text, "formatText": formText}
 
 
-def getEncoding(file: UploadFile) -> str:
+def get_encoding(file: BinaryIO) -> str:
     encodingType = ""
 
-    for c in file.file.read():
+    for c in file.read():
         if c in win1251:
             encodingType = "cp1251"
             break
@@ -63,7 +49,7 @@ def getEncoding(file: UploadFile) -> str:
             encodingType = "utf-16-be"
             break
 
-    file.file.seek(0, 0)
+    file.seek(0, 0)
 
     return encodingType
 
@@ -77,11 +63,11 @@ class Char:
         return self.symbol == other.symbol
 
 
-def sortBySymbol(char: Char):
+def sort_by_symbol(char: Char):
     return char.symbol
 
 
-def getCharsWithCodes(text: str, encoding: str) -> list:
+def get_chars_with_codes(text: str, encoding: str) -> list:
     chars = list()
 
     for c in text:
@@ -97,18 +83,18 @@ def getCharsWithCodes(text: str, encoding: str) -> list:
         if char not in chars:
             chars.append(char)
 
-    chars.sort(key=sortBySymbol)
+    chars.sort(key=sort_by_symbol)
 
     return chars
 
 
-def getFormatText(text: str) -> str:
+def get_format_text(text: str) -> str:
     res = re.sub(r'[^\w\s]', '', text)
 
     return " ".join(res.split())
 
 
-def customEncoding(text: str):
+def custom_encoding(text: str):
     encodedChars = list()
 
     for c in text:
