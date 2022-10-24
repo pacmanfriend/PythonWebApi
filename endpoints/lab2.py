@@ -1,15 +1,16 @@
-from fastapi import APIRouter, UploadFile
+from fastapi import APIRouter
 import heapq
 from heapq import heappop, heappush
 
 lab2Router: APIRouter = APIRouter()
 
 
-@lab2Router.post("/upload-file")
-async def upload_file(file: UploadFile):
-    text = file.file.read().decode("utf-8")
-    chars = getCharsWithCodes(text, "utf-8")
+@lab2Router.get("/get-huffman-codes")
+async def get_huffman_codes(file_name: str):
+    file = open(f"files/labs/{file_name}", "rb")
 
+    text = file.read().decode("utf-8")
+    chars = get_chars_with_codes(text, "utf-8")
     res = buildHuffmanTree(text)
 
     totalMainSize = 0
@@ -51,15 +52,15 @@ class Char:
         return self.symbol == other.symbol
 
 
-def sortBySymbol(char: Char):
+def sort_by_symbol(char: Char):
     return char.symbol
 
 
-def sortByCount(char: Char):
+def sort_by_count(char: Char):
     return char.count
 
 
-def getCharsWithCodes(text: str, encoding: str) -> list:
+def get_chars_with_codes(text: str, encoding: str) -> list:
     chars = list()
     charsCounter = dict()
 
@@ -83,7 +84,7 @@ def getCharsWithCodes(text: str, encoding: str) -> list:
     for c in chars:
         c.count = charsCounter[c.symbol]
 
-    chars.sort(key=sortByCount)
+    chars.sort(key=sort_by_count)
 
     return chars
 
@@ -102,7 +103,7 @@ class Node:
         return self.freq < other.freq
 
 
-def isLeaf(root: Node):
+def is_leaf(root: Node):
     return root.left is None and root.right is None
 
 
@@ -112,7 +113,7 @@ def encode(root, s, huffman_code):
         return
 
     # обнаружил листовой узел
-    if isLeaf(root):
+    if is_leaf(root):
         huffman_code[root.ch] = s if len(s) > 0 else '1'
 
     encode(root.left, s + '0', huffman_code)
@@ -125,7 +126,7 @@ def decode(root, index, s):
         return index
 
     # обнаружил листовой узел
-    if isLeaf(root):
+    if is_leaf(root):
         print(root.ch, end='')
         return index
 
@@ -176,7 +177,7 @@ def buildHuffmanTree(text: str):
     for c in text:
         s += huffmanCode.get(c)
 
-    if isLeaf(root):
+    if is_leaf(root):
         # Особый случай: для ввода типа a, aa, aaa и т. д.
         while root.freq > 0:
             print(root.ch, end='')
