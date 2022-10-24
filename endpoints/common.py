@@ -1,7 +1,9 @@
 import os
 
-from fastapi import APIRouter, UploadFile
-import shutil
+from fastapi import APIRouter, UploadFile, status
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
+import aiofiles
 
 from pydantic import BaseModel
 
@@ -10,8 +12,26 @@ commonRouter: APIRouter = APIRouter()
 
 @commonRouter.post('/upload-file')
 async def upload_file(file: UploadFile):
-    with open(f"files/{file.filename}.txt", "w") as textFile:
-        shutil.copyfileobj(file.file, textFile)
+    try:
+        async with aiofiles.open(f"files/labs/{file.filename}", "wb") as out_file:
+            content = file.file.read()
+            await out_file.write(content)
+    except Exception as e:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                'message': 'Произошла ошибка при сохранении файла',
+                'error': str(e)
+            }
+        )
+    else:
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                'message': 'Файл успешно сохранен',
+                'error': None
+            }
+        )
 
 
 class File(BaseModel):
@@ -19,16 +39,31 @@ class File(BaseModel):
 
 
 @commonRouter.get('/get-files')
-async def get_files() -> list:
-    filesFromDir = os.listdir('files/labs')
+async def get_files() -> JSONResponse:
+    try:
+        filesFromDir = os.listdir('files/labs')
 
-    files = list()
+        files = list()
 
-    for f in filesFromDir:
-        file = File(FileName=f)
+        for f in filesFromDir:
+            file = File(FileName=f)
 
-        files.append(file)
+            files.append(file)
 
-    a = 0
-
-    return files
+    except Exception as e:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                'message': 'Произошла ошибка',
+                'error': str(e)
+            }
+        )
+    else:
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                'files': jsonable_encoder(files),
+                'message': 'Успешно',
+                'error': None
+            }
+        )
