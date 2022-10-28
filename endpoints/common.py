@@ -67,3 +67,34 @@ async def get_files() -> JSONResponse:
                 'error': None
             }
         )
+
+
+@commonRouter.get('/get-result-files')
+async def get_result_files():
+    try:
+        filesFromDir = os.listdir('files/results')
+
+        files = list()
+
+        for f in filesFromDir:
+            file = File(FileName=f)
+
+            files.append(file)
+
+    except Exception as e:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                'message': 'Произошла ошибка',
+                'error': str(e)
+            }
+        )
+    else:
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                'files': jsonable_encoder(files),
+                'message': 'Успешно',
+                'error': None
+            }
+        )

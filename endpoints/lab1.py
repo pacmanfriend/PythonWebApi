@@ -25,12 +25,19 @@ async def get_file_encoding(file_name: str):
     file = open(f"files/labs/{file_name}", mode="br")
 
     encoding: str = get_encoding(file)
-    text = file.read().decode(encoding)
 
-    chars = get_chars_with_codes(text, encoding)
-    formText = get_format_text(text)
+    text: str = ""
+    chars: list = list()
+    formText: str = ""
 
-    custom_encoding(formText)
+    if encoding == "custom":
+        text = file.read().decode("utf-8")
+        formText = custom_decoding(text)
+    else:
+        text = file.read().decode(encoding)
+        chars = get_chars_with_codes(text, encoding)
+        formText = get_format_text(text).upper()
+        custom_encoding(formText)
 
     return {"encodingType": encoding, "chars": chars, "rawText": text, "formatText": formText}
 
@@ -47,6 +54,9 @@ def get_encoding(file: BinaryIO) -> str:
             break
         elif c in unicode:
             encodingType = "utf-16-be"
+            break
+        else:
+            encodingType = "custom"
             break
 
     file.seek(0, 0)
@@ -89,7 +99,7 @@ def get_chars_with_codes(text: str, encoding: str) -> list:
 
 
 def get_format_text(text: str) -> str:
-    res = re.sub(r'[^\w\s]', '', text)
+    res = re.sub(r'[^\w\s]+|\d+', '', text)
 
     return " ".join(res.split())
 
@@ -105,3 +115,20 @@ def custom_encoding(text: str):
     lab1_file = open(file="files/results/lab1.txt", mode="w")
     lab1_file.write(encodedStr)
     lab1_file.close()
+
+
+def get_key(d: dict, value: int):
+    for k, v in d.items():
+        if v == value:
+            return k
+
+
+def custom_decoding(text: str) -> str:
+    res: str = ""
+
+    massive = text.split(" ")
+
+    for c in massive:
+        res += str(get_key(myEncoding, int(c)))
+
+    return res
