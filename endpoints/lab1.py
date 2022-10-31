@@ -1,7 +1,8 @@
 import re
 from typing import BinaryIO
-
 from fastapi import APIRouter
+
+from core import encodingUtils
 
 lab1Router: APIRouter = APIRouter()
 
@@ -35,7 +36,7 @@ async def get_file_encoding(file_name: str):
         formText = custom_decoding(text)
     else:
         text = file.read().decode(encoding)
-        chars = get_chars_with_codes(text, encoding)
+        chars = encodingUtils.get_chars_with_codes(text, encoding)
         formText = get_format_text(text).upper()
         custom_encoding(formText)
 
@@ -62,40 +63,6 @@ def get_encoding(file: BinaryIO) -> str:
     file.seek(0, 0)
 
     return encodingType
-
-
-class Char:
-    def __init__(self, symbol, code):
-        self.symbol = symbol
-        self.code = code
-
-    def __eq__(self, other):
-        return self.symbol == other.symbol
-
-
-def sort_by_symbol(char: Char):
-    return char.symbol
-
-
-def get_chars_with_codes(text: str, encoding: str) -> list:
-    chars = list()
-
-    for c in text:
-        byt = c.encode(encoding=encoding)
-
-        bytesList = list()
-
-        for b in byt:
-            bytesList.append(b)
-
-        char = Char(c, bytesList)
-
-        if char not in chars:
-            chars.append(char)
-
-    chars.sort(key=sort_by_symbol)
-
-    return chars
 
 
 def get_format_text(text: str) -> str:
