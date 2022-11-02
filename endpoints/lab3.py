@@ -120,9 +120,12 @@ def arithmetic_coding(segments: dict[str, Segment], text: str) -> float:
         right = newRight
         left = newLeft
 
-    res: float = (left + right) / 2
+    # res: float = (left + right) / 2
 
-    return res
+    while left < right:
+        left = math.ceil(left)
+
+    return left
 
 
 def arithmetic_decoding(segments: dict[str, Segment], code: float, text_size: int):

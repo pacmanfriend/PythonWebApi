@@ -31,9 +31,9 @@ async def get_huffman_codes(file_name: str):
 
     encodedText = res[1]
 
-    lab2_file = open("files/results/lab2.txt", "w")
-
+    lab2_file = open("files/results/lab2-res.txt", "w")
     lab2_file.write(encodedText)
+    lab2_file.close()
 
     return {"chars": chars, "encodedText": encodedText, "entropy1": entropy1, "entropy2": entropy2,
             "compression": compressionRatio}
