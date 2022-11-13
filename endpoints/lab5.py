@@ -92,19 +92,11 @@ def encrypt(text: str, m: int, n: int, key: int) -> str:
 
     blocks = get_blocks(text, m, n)
 
-    for block in blocks:
-        for i in range(m):
-            for j in range(n):
-                block[i][j], block[i][column_key[j]] = block[i][column_key[j]], block[i][j]
-
-    for block in blocks:
-        for i in range(m):
-            for j in range(n):
-                block[i][j], block[row_key[i]][j] = block[row_key[i]][j], block[i][j]
+    encrypted_blocks = replace_rows_in_blocks(replace_columns_in_blocks(blocks, m, n, column_key), m, n, row_key)
 
     encrypted_list: list[str] = list()
 
-    for block in blocks:
+    for block in encrypted_blocks:
         for i in range(m):
             for j in range(n):
                 encrypted_list.append(block[i][j])
@@ -124,24 +116,23 @@ def decrypt(text: str, m: int, n: int, key) -> str:
     row_key = keys[0]
     column_key = keys[1]
 
-    # row_key.reverse()
-    # column_key.reverse()
+    decrypt_row_key: list[int] = [0 for _ in range(m)]
+    decrypt_column_key: list[int] = [0 for _ in range(n)]
+
+    for i in range(m):
+        decrypt_row_key[row_key[i]] = i
+
+    for i in range(n):
+        decrypt_column_key[column_key[i]] = i
 
     blocks = get_blocks(text, m, n)
 
-    for block in blocks:
-        for i in range(m):
-            for j in range(n):
-                block[row_key[i]][j], block[i][j] = block[i][j], block[row_key[i]][j]
-
-    for block in blocks:
-        for i in range(m):
-            for j in range(n):
-                block[i][column_key[j]], block[i][j] = block[i][j], block[i][column_key[j]]
+    encrypted_blocks = replace_columns_in_blocks(replace_rows_in_blocks(blocks, m, n, decrypt_row_key), m, n,
+                                                 decrypt_column_key)
 
     decrypted_list: list[str] = list()
 
-    for block in blocks:
+    for block in encrypted_blocks:
         for i in range(m):
             for j in range(n):
                 decrypted_list.append(block[i][j])
@@ -149,3 +140,34 @@ def decrypt(text: str, m: int, n: int, key) -> str:
     decrypted_text = "".join(decrypted_list)
 
     return decrypted_text
+
+
+def replace_columns_in_blocks(blocks: list[list[list[str]]], m: int, n: int, col_key: list[int]) \
+        -> list[list[list[str]]]:
+    replaced_blocks: list[list[list[str]]] = list()
+
+    for block in blocks:
+        rep_block: list[list[str]] = [["" for _ in range(n)] for _ in range(m)]
+
+        for i in range(m):
+            for j in range(n):
+                rep_block[i][col_key[j]] = block[i][j]
+
+        replaced_blocks.append(rep_block)
+
+    return replaced_blocks
+
+
+def replace_rows_in_blocks(blocks: list[list[list[str]]], m: int, n: int, row_key: list[int]) -> list[list[list[str]]]:
+    replaced_blocks: list[list[list[str]]] = list()
+
+    for block in blocks:
+        rep_block: list[list[str]] = [["" for _ in range(n)] for _ in range(m)]
+
+        for j in range(n):
+            for i in range(m):
+                rep_block[row_key[i]][j] = block[i][j]
+
+        replaced_blocks.append(rep_block)
+
+    return replaced_blocks
