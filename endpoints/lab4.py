@@ -11,8 +11,9 @@ async def get_gamma_encryption(file_name: str, is_encoding: bool = True) -> JSON
     file = open(f"files/labs/{file_name}", "rb")
 
     text = ""
+    n = 3
 
-    key = 7
+    key = 10 * n + n
 
     if is_encoding:
         text = file.read()
