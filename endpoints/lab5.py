@@ -16,6 +16,8 @@ async def block_encrypt(file_name: str, is_encoding: bool = True) -> JSONRespons
     text = file.read().decode("utf-8")
     result_text = ""
 
+    keys = get_key(m, n, key)
+
     if is_encoding:
         result_text = encrypt(text, m, n, key)
     else:
@@ -25,7 +27,9 @@ async def block_encrypt(file_name: str, is_encoding: bool = True) -> JSONRespons
         status_code=status.HTTP_200_OK,
         content={
             "text": str(text),
-            "result": str(result_text)
+            "result": str(result_text),
+            "row_key": str(keys[0]),
+            "col_key": str(keys[1])
         }
     )
 
