@@ -9,7 +9,6 @@ lab4Route: APIRouter = APIRouter()
 @lab4Route.get('/get-gamma-encryption')
 async def get_gamma_encryption(file_name: str, is_encoding: bool = True) -> JSONResponse:
     file = open(f"files/labs/{file_name}", "rb")
-
     text = ""
     n = 3
 
