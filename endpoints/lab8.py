@@ -18,11 +18,6 @@ def vigenere_encrypt(file_name: str, is_encoding: bool = True) -> JSONResponse:
     e = 3
     d = 0
 
-    # for i in range(2, n - 1):
-    #     if n // i != 0:
-    #         e = i
-    #         break
-
     i = 1
     while True:
         if (i * e) % f == 1:
