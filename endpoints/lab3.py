@@ -10,7 +10,7 @@ lab3Route: APIRouter = APIRouter()
 
 
 @lab3Route.get("/get-arithmetic-encoding")
-async def arithmetic_encoding(file_name: str) -> JSONResponse:
+async def arithmetic_encoding(file_name: str, is_encoding: bool = True) -> JSONResponse:
     file = open(f"files/labs/{file_name}", "rb")
 
     text: str = file.read().decode("utf-8")
@@ -20,26 +20,64 @@ async def arithmetic_encoding(file_name: str) -> JSONResponse:
     letters: list[Letter] = get_letters_frequency(text)
     letters.sort(key=sort_letters_by_probability, reverse=True)
 
+    text_len = len(text)
+
     segments: dict[str, Segment] = define_segments(letters)
 
-    res_code: float = arithmetic_coding(segments, text)
-    res_text: str = arithmetic_decoding(segments, res_code, len(text))
+    res_codes: list[float] = list()
+    codes_for_output: list[str] = list()
+
+    block_size: int = 10
+    current: int = 0
+
+    while current < text_len:
+        text_block = ""
+
+        if current + block_size < text_len:
+            text_block = text[current:current + block_size]
+        else:
+            text_block = text[current:]
+
+        res_code: float = arithmetic_coding(segments, text_block)
+        res_codes.append(res_code)
+        codes_for_output.append(str(res_code))
+
+        current += block_size
+
+    res_codes_str = " ".join(codes_for_output)
+
+    res_text = ""
+
+    current = 0
+
+    for code in res_codes:
+        if current < text_len:
+            current = block_size
+        else:
+            current = text_len - (text_len // block_size) * block_size
+
+        res_block: str = arithmetic_decoding(segments, code, current)
+
+        res_text += res_block
+
+    res_text = res_text[:text_len]
 
     segments_list: list[Segment] = list(segments.values())
-
-    encoded_text: str = get_encoded_text(text, segments_list)
 
     for letter in letters:
         segments[letter.char].frequency = letter.frequency
         segments[letter.char].probability = letter.probability
 
-    bites = math.log2(res_code)
+    code_to_str = str(res_codes[0])[2:]
+
+    bites = math.log2(len(code_to_str) / 8 * 10)
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content={
-            'result': str(res_code),
+            'result': str(res_codes_str),
             'text': str(text),
+            'restext': str(res_text),
             'bites': str(bites),
             'chars': jsonable_encoder(chars),
             'segments': jsonable_encoder(segments_list)
@@ -120,12 +158,9 @@ def arithmetic_coding(segments: dict[str, Segment], text: str) -> float:
         right = newRight
         left = newLeft
 
-    # res: float = (left + right) / 2
+    res = (right + left) / 2
 
-    while left < right:
-        left = math.ceil(left)
-
-    return left
+    return res
 
 
 def arithmetic_decoding(segments: dict[str, Segment], code: float, text_size: int):
